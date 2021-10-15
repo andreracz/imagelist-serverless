@@ -15,21 +15,26 @@ namespace ImageList
         [FunctionName("UploadImage")]
         public static async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req,
-            ILogger log)
+            ILogger log,
+            IBinder binder)
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
 
-            string name = req.Query["name"];
 
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            dynamic data = JsonConvert.DeserializeObject(requestBody);
-            name = name ?? data?.name;
+            var data = JsonConvert.DeserializeObject<UploadImageModel>(requestBody);
+            
+            var file = Convert.FromBase64String(data.File);
+            var extension = data.Extension;
+            var guid = Guid.NewGuid().ToString();
 
-            string responseMessage = string.IsNullOrEmpty(name)
-                ? "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response."
-                : $"Hello, {name}. This HTTP triggered function executed successfully.";
+            var blob = new BlobAttribute("images/" + guid + "." + extension, FileAccess.Write);
+            blob.Connection = "StorageAccount";
+            using(var output = binder.Bind<Stream>(blob)){
+                await output.WriteAsync(file, 0, file.Length);
+            }
 
-            return new OkObjectResult(responseMessage);
+            return new OkObjectResult("OK");
         }
     }
 }
