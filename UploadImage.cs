@@ -1,16 +1,19 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+
 using Newtonsoft.Json;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
+using Microsoft.Azure.Cosmos.Table;
 
 
 namespace ImageList
@@ -65,5 +68,24 @@ namespace ImageList
             }
 
         }
+
+        [FunctionName("GetImages")]
+        public static IActionResult GetImages(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)] HttpRequest req,
+            [Table("Images", Connection ="StorageAccount")] CloudTable cloudTable,
+            ILogger log
+            ) {
+            var images = cloudTable.ExecuteQuery(new TableQuery());
+            var imagesToReturn = new List<GetImageModel>();
+            foreach(var image in images) {
+                imagesToReturn.Add(new GetImageModel { 
+                        Guid = image.RowKey, 
+                        Extension = image.Properties["Extension"].StringValue,
+                        Title = image.Properties["Title"].StringValue,
+                    });
+            }
+            return new OkObjectResult(imagesToReturn);
+        }
+
     }
 }
