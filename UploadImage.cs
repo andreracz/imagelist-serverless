@@ -19,7 +19,7 @@ namespace ImageList
     {
         [FunctionName("UploadImage")]
         [return: Table("Images", Connection ="StorageAccount")]
-        public static async Task<ImageTable> Run(
+        public static async Task<ImageTable> UploadImage(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req,
             ILogger log,
             IBinder binder)
@@ -43,6 +43,9 @@ namespace ImageList
             return new ImageTable{ PartitionKey = extension, RowKey=guid, Title=data.Title, Extension=extension};
         }
 
+
+
+        [FunctionName("GerarThumbnail")]
         public static void GerarThumbnail(
             [BlobTrigger("images/{name}", Connection ="StorageAccount")] Stream fullImage,
             [Blob("thumbnails/{name}", FileAccess.Write, Connection = "StorageAccount")] Stream thumbnail,
