@@ -7,6 +7,11 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
+
 
 namespace ImageList
 {
@@ -36,6 +41,26 @@ namespace ImageList
             }
 
             return new ImageTable{ PartitionKey = extension, RowKey=guid, Title=data.Title, Extension=extension};
+        }
+
+        public static void GerarThumbnail(
+            [BlobTrigger("images/{name}", Connection ="StorageAccount")] Stream fullImage,
+            [Blob("thumbnails/{name}", FileAccess.Write, Connection = "StorageAccount")] Stream thumbnail,
+            ILogger log) {
+
+            IImageFormat format;
+
+            using (Image<Rgba32> input = Image.Load<Rgba32>(fullImage, out format))
+            {
+                var Height = input.Height;
+                var Width = input.Width;
+                var NewHeight = 100;
+                double ratio = Height / 100.0;
+                int NewWidth = (int) (Width / (ratio));
+                input.Mutate(x => x.Resize(NewWidth, NewHeight));
+                input.Save(thumbnail, format);
+            }
+
         }
     }
 }
