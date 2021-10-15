@@ -78,10 +78,14 @@ namespace ImageList
             var images = cloudTable.ExecuteQuery(new TableQuery());
             var imagesToReturn = new List<GetImageModel>();
             foreach(var image in images) {
+                var props = image.Properties;
+                var extension = image.Properties.ContainsKey("Extension")? image.Properties["Extension"]?.StringValue: "";
+                var title = image.Properties.ContainsKey("Title")? image.Properties["Title"]?.StringValue: "";
+                
                 imagesToReturn.Add(new GetImageModel { 
                         Guid = image.RowKey, 
-                        Extension = image.Properties["Extension"]?.StringValue,
-                        Title = image.Properties["Title"]?.StringValue,
+                        Extension = extension,
+                        Title = title,
                     });
             }
             return new OkObjectResult(imagesToReturn);
