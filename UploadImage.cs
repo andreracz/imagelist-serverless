@@ -13,7 +13,8 @@ namespace ImageList
     public static class UploadImage
     {
         [FunctionName("UploadImage")]
-        public static async Task<IActionResult> Run(
+        [return: Table("Images", Connection ="StorageAccount")]
+        public static async Task<ImageTable> Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req,
             ILogger log,
             IBinder binder)
@@ -34,7 +35,7 @@ namespace ImageList
                 await output.WriteAsync(file, 0, file.Length);
             }
 
-            return new OkObjectResult("OK");
+            return new ImageTable{ PartitionKey = extension, RowKey=guid, Title=data.Title, Extension=extension};
         }
     }
 }
