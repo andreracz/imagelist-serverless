@@ -80,8 +80,8 @@ namespace ImageList
             foreach(var image in images) {
                 imagesToReturn.Add(new GetImageModel { 
                         Guid = image.RowKey, 
-                        Extension = image.Properties["Extension"].StringValue,
-                        Title = image.Properties["Title"].StringValue,
+                        Extension = image.Properties["Extension"]?.StringValue,
+                        Title = image.Properties["Title"]?.StringValue,
                     });
             }
             return new OkObjectResult(imagesToReturn);
