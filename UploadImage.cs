@@ -19,7 +19,7 @@ namespace ImageList
     {
         [FunctionName("UploadImage")]
         [return: Table("Images", Connection ="StorageAccount")]
-        public static async Task<ImageTable> UploadImage(
+        public static async Task<ImageTable> UploadImageFunction(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req,
             ILogger log,
             IBinder binder)
